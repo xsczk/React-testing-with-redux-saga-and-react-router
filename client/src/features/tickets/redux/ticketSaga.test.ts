@@ -52,6 +52,13 @@ const holdAction = {
   payload: holdReservation,
 };
 
+test("cancelTransaction cancels hold and resets transaction", () => {
+  return expectSaga(cancelTransaction, holdReservation)
+    .call(releaseServerCall, holdReservation)
+    .put(resetTransaction())
+    .run();
+});
+
 describe("common to all flows", () => {
   test("starts with hold call to server", () => {
     // expectSaga is asynchronous fn so we have to use return keyword or async await
@@ -90,6 +97,7 @@ describe("common to all flows", () => {
             generateErrorToastOptions(`It's did not work`, TicketAction.hold)
           )
         )
+        .call(cancelTransaction, holdReservation)
         .run()
     );
   });
