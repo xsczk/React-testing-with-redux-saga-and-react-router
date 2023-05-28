@@ -45,15 +45,21 @@ import {
   purchasePayload,
 } from "../../../test-utils/fake-data";
 import * as matchers from "redux-saga-test-plan/matchers";
-import { throwError } from "redux-saga-test-plan/providers";
+import { StaticProvider, throwError } from "redux-saga-test-plan/providers";
 
 const holdAction = {
   type: "test",
   payload: holdReservation,
 };
 
+const networkProviders: Array<StaticProvider> = [
+  [matchers.call.fn(reserveTicketServerCall), null],
+  [matchers.call.fn(releaseServerCall), null],
+];
+
 test("cancelTransaction cancels hold and resets transaction", () => {
   return expectSaga(cancelTransaction, holdReservation)
+    .provide(networkProviders)
     .call(releaseServerCall, holdReservation)
     .put(resetTransaction())
     .run();
@@ -63,10 +69,7 @@ describe("common to all flows", () => {
   test("starts with hold call to server", () => {
     // expectSaga is asynchronous fn so we have to use return keyword or async await
     return expectSaga(ticketFlow, holdAction)
-      .provide([
-        [matchers.call.fn(reserveTicketServerCall), null],
-        [matchers.call.fn(releaseServerCall), null],
-      ])
+      .provide(networkProviders)
       .dispatch(
         startTicketAbort({
           reservation: holdReservation,
@@ -89,7 +92,10 @@ describe("common to all flows", () => {
             matchers.select.selector(selectors.getTicketAction),
             TicketAction.hold,
           ],
-          [matchers.call.fn(releaseServerCall), null],
+          // based on the documentation, the first provider to match an effect is used,
+          // skipping subsequent providers, so we can use spread operator of network provider
+          // to override the releaseServerCall fn() without caring about reserveTicketServerCall fn()
+          ...networkProviders,
         ])
         // assert on startToast action
         .put(
