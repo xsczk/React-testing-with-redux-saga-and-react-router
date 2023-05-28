@@ -153,7 +153,6 @@ describe("purchase flow", () => {
           },
           ...networkProviders,
         ])
-        // TODO: handle race so that abort wins
         .call(cancelSource.cancel)
         .call(cancelPurchaseServerCall, purchaseReservation)
         .put(showToast({ title: "purchase canceled", status: "warning" }))
