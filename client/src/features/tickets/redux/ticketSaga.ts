@@ -77,7 +77,7 @@ export function* purchaseTickets(
     });
     if (abort) {
       yield call(cancelSource.cancel);
-      yield cancel();
+      yield cancel(); // jump to finally block
     } else if (purchaseResult) {
       // result will only be truthy if there was an error
       const ticketAction = yield select(selectors.getTicketAction);
