@@ -144,7 +144,15 @@ describe("purchase flow", () => {
     const cancelSource = axios.CancelToken.source();
     return (
       expectSaga(purchaseTickets, purchasePayload, cancelSource)
-        .provide(networkProviders)
+        .provide([
+        // dynamic providers
+          {
+            race: () => ({
+              abort: true,
+            }),
+          },
+          ...networkProviders,
+        ])
         // TODO: handle race so that abort wins
         .call(cancelSource.cancel)
         .call(cancelPurchaseServerCall, purchaseReservation)
