@@ -45,6 +45,7 @@ import {
   purchasePayload,
 } from "../../../test-utils/fake-data";
 import * as matchers from "redux-saga-test-plan/matchers";
+import { throwError } from "redux-saga-test-plan/providers";
 
 const holdAction = {
   type: "test",
@@ -67,5 +68,29 @@ describe("common to all flows", () => {
       )
       .call(reserveTicketServerCall, holdReservation)
       .run();
+  });
+  test("show error toast and clean up after server error", () => {
+    return (
+      expectSaga(ticketFlow, holdAction)
+        .provide([
+          [
+            matchers.call.fn(reserveTicketServerCall),
+            throwError(new Error(`It's did not work`)),
+          ],
+          // write providers for selector
+          [
+            matchers.select.selector(selectors.getTicketAction),
+            TicketAction.hold,
+          ],
+          [matchers.call.fn(releaseServerCall), null],
+        ])
+        // assert on startToast action
+        .put(
+          showToast(
+            generateErrorToastOptions(`It's did not work`, TicketAction.hold)
+          )
+        )
+        .run()
+    );
   });
 });
