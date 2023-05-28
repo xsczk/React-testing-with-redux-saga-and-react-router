@@ -142,23 +142,35 @@ describe("purchase flow", () => {
 
   test("abort purchase while call to server is running", () => {
     const cancelSource = axios.CancelToken.source();
-    return (
-      expectSaga(purchaseTickets, purchasePayload, cancelSource)
-        .provide([
+    return expectSaga(purchaseTickets, purchasePayload, cancelSource)
+      .provide([
         // dynamic providers
-          {
-            race: () => ({
-              abort: true,
-            }),
-          },
-          ...networkProviders,
-        ])
-        .call(cancelSource.cancel)
-        .call(cancelPurchaseServerCall, purchaseReservation)
-        .put(showToast({ title: "purchase canceled", status: "warning" }))
-        .call(cancelTransaction, holdReservation)
-        .not.put(showToast({ title: "tickets purchased", status: "success" }))
-        .run()
-    );
+        {
+          race: () => ({
+            abort: true,
+          }),
+        },
+        ...networkProviders,
+      ])
+      .call(cancelSource.cancel)
+      .call(cancelPurchaseServerCall, purchaseReservation)
+      .put(showToast({ title: "purchase canceled", status: "warning" }))
+      .call(cancelTransaction, holdReservation)
+      .not.put(showToast({ title: "tickets purchased", status: "success" }))
+      .run();
+  });
+
+  test("successfull purchase flow", () => {
+    const cancelSource = axios.CancelToken.source();
+    return expectSaga(purchaseTickets, purchasePayload, cancelSource)
+      .provide(networkProviders)
+      .call(reserveTicketServerCall, purchaseReservation, cancelSource.token)
+      .put(showToast({ title: "tickets purchased", status: "success" }))
+      .call(releaseServerCall, holdReservation)
+      .put(endTransaction())
+      .not.call.fn(cancelSource.cancel)
+      .not.call.fn(cancelPurchaseServerCall)
+      .not.put(showToast({ title: "purchase canceled", status: "warning" }))
+      .run();
   });
 });
