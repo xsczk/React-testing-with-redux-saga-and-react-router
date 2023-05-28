@@ -2,13 +2,13 @@
 
 ### Code for the "Popular Music Venue" app in the Udemy course [Advanced React Testing: Redux Saga and React Router](https://www.udemy.com/course/advanced-react-testing/?referralCode=317FB8E2C866D75D3B71)
 
-## How to start this projects
+# Installation
 
 ## Server
 ### Installing
 
 1. cd to server folder
-2. Run `npm install` or `yarn`
+2. Run `npm install`
 3. `cp .env_template .env`
 4. Optional, only necessary if you're going to deploy: update `.env` to contain your own secret string (can just mash the keyboard to generate a long random string)
 
