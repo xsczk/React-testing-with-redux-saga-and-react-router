@@ -29,6 +29,12 @@ const authServerResponse: LoggedInUser = {
   id: 123,
 };
 
+const signUpRequestPayload: SignInDetails = {
+  email: "wowminhnghia@gmail.com",
+  password: "12021999",
+  action: "signUp",
+};
+
 const networkProviders: Array<StaticProvider> = [
   [matchers.call.fn(authServerCall), authServerResponse],
 ];
@@ -54,7 +60,23 @@ describe("signInFlow saga", () => {
         .silentRun() // using silentRun to avoid warning timeout in infinite loop
     );
   });
-  test.todo("successfull sign-up");
+  test("successfull sign-up", () => {
+    return expectSaga(signInFlow)
+      .provide(networkProviders)
+      .dispatch(signInRequest(signUpRequestPayload))
+      .fork(authenticateUser, signUpRequestPayload)
+      .put(startSignIn())
+      .call(authServerCall, signUpRequestPayload)
+      .put(signIn(authServerResponse))
+      .put(
+        showToast({
+          title: `Signed in as ${authServerResponse.email}`,
+          status: "info",
+        })
+      )
+      .put(endSignIn())
+      .silentRun();
+  });
   test.todo("cancelled sign-in");
   test.todo("sign-in error");
 });
