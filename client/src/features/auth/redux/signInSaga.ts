@@ -25,7 +25,7 @@ export function* authenticateUser(payload: SignInDetails): SagaIterator {
         status: "info",
       })
     );
-  } catch (error) {
+  } catch (error: any) {
     const action = payload.action === "signIn" ? "in" : "up";
     yield put(
       showToast({

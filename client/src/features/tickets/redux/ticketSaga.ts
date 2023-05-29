@@ -123,7 +123,7 @@ export function* ticketFlow({
     } else {
       yield call(releaseTickets, nextAction.payload);
     }
-  } catch (error) {
+  } catch (error: any) {
     const ticketAction = yield select(selectors.getTicketAction);
     yield put(
       showToast(generateErrorToastOptions(error.message, ticketAction))

@@ -1,20 +1,13 @@
-import { PayloadAction } from "@reduxjs/toolkit";
-import axios, { CancelTokenSource } from "axios";
-import { SagaIterator } from "redux-saga";
+import axios from "axios";
+import { expectSaga } from "redux-saga-test-plan";
+import * as matchers from "redux-saga-test-plan/matchers";
+import { StaticProvider, throwError } from "redux-saga-test-plan/providers";
 import {
-  call,
-  cancel,
-  cancelled,
-  put,
-  race,
-  select,
-  take,
-  takeEvery,
-} from "redux-saga/effects";
-
-import { HoldReservation } from "../../../../../shared/types";
+  holdReservation,
+  purchasePayload,
+  purchaseReservation,
+} from "../../../test-utils/fake-data";
 import { showToast } from "../../toast/redux/toastSlice";
-import { ToastOptions } from "../../toast/types";
 import {
   cancelPurchaseServerCall,
   releaseServerCall,
@@ -22,30 +15,19 @@ import {
 } from "../api";
 import { TicketAction } from "../types";
 import {
+  cancelTransaction,
+  generateErrorToastOptions,
+  purchaseTickets,
+  ticketFlow,
+} from "./ticketSaga";
+import {
   endTransaction,
-  holdTickets,
-  PurchasePayload,
-  ReleasePayload,
   resetTransaction,
   selectors,
   startTicketAbort,
   startTicketPurchase,
   startTicketRelease,
 } from "./ticketSlice";
-import { expectSaga } from "redux-saga-test-plan";
-import {
-  generateErrorToastOptions,
-  cancelTransaction,
-  purchaseTickets,
-  ticketFlow,
-} from "./ticketSaga";
-import {
-  holdReservation,
-  purchaseReservation,
-  purchasePayload,
-} from "../../../test-utils/fake-data";
-import * as matchers from "redux-saga-test-plan/matchers";
-import { StaticProvider, throwError } from "redux-saga-test-plan/providers";
 
 const holdAction = {
   type: "test",
