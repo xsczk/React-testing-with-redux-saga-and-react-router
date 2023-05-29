@@ -69,18 +69,16 @@ test("cancelTransaction cancels hold and resets transaction", () => {
 describe("common to all flows", () => {
   test("starts with hold call to server", () => {
     // expectSaga is asynchronous fn so we have to use return keyword or async await
-    return (
-      expectSaga(ticketFlow, holdAction)
-        .provide(networkProviders)
-        .dispatch(
-          startTicketAbort({
-            reservation: holdReservation,
-            reason: "Abort request",
-          })
-        )
-        // .call(reserveTicketServerCall, holdReservation)
-        .run()
-    );
+    return expectSaga(ticketFlow, holdAction)
+      .provide(networkProviders)
+      .call(reserveTicketServerCall, holdReservation)
+      .dispatch(
+        startTicketAbort({
+          reservation: holdReservation,
+          reason: "Abort request",
+        })
+      )
+      .run();
   });
   test("show error toast and clean up after server error", () => {
     return (
@@ -171,6 +169,32 @@ describe("purchase flow", () => {
       .not.call.fn(cancelSource.cancel)
       .not.call.fn(cancelPurchaseServerCall)
       .not.put(showToast({ title: "purchase canceled", status: "warning" }))
+      .run();
+  });
+});
+
+describe("hold cancellation", () => {
+  test("cancels hold and resets ticket transaction on cancel", () => {
+    return expectSaga(ticketFlow, holdAction)
+      .provide(networkProviders)
+      .call.fn(reserveTicketServerCall)
+      .dispatch(
+        startTicketRelease({ reservation: holdReservation, reason: "test" })
+      )
+      .put(showToast({ title: "test", status: "warning" }))
+      .call.fn(cancelTransaction)
+      .run();
+  });
+
+  test("cancels hold and resets ticket transaction on abort", () => {
+    return expectSaga(ticketFlow, holdAction)
+      .provide(networkProviders)
+      .call(reserveTicketServerCall, holdReservation)
+      .dispatch(
+        startTicketAbort({ reservation: holdReservation, reason: "test" })
+      )
+      .put(showToast({ title: "test", status: "warning" }))
+      .call(cancelTransaction, holdReservation)
       .run();
   });
 });
