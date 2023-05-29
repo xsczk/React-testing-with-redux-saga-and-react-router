@@ -15,7 +15,7 @@ import {
 import { expectSaga } from "redux-saga-test-plan";
 import { authenticateUser, signInFlow } from "./signInSaga";
 import * as matchers from "redux-saga-test-plan/matchers";
-import { StaticProvider } from "redux-saga-test-plan/providers";
+import { StaticProvider, throwError } from "redux-saga-test-plan/providers";
 
 const signInRequestPayload: SignInDetails = {
   email: "wowminhnghia@gmail.com",
@@ -106,5 +106,24 @@ describe("signInFlow saga", () => {
         .silentRun()
     );
   });
-  test.todo("sign-in error");
+  test("sign-in error", () => {
+    return expectSaga(signInFlow)
+      .provide([
+        [
+          matchers.call.fn(authServerCall),
+          throwError(new Error("server is broken")),
+        ],
+      ])
+      .dispatch(signInRequest(signInRequestPayload))
+      .fork(authenticateUser, signInRequestPayload)
+      .put(startSignIn())
+      .put(
+        showToast({
+          title: "Sign in failed: server is broken",
+          status: "warning",
+        })
+      )
+      .put(endSignIn())
+      .silentRun();
+  });
 });
