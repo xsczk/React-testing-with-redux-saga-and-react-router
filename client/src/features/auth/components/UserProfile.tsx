@@ -13,6 +13,7 @@ export function UserProfile(): ReactElement {
   }
 
   return (
+    // @ts-ignore
     <Flex minH="84vh" align="center" justify="center">
       <Stack spacing={8} mx="auto" w="xl" py={12} px={6}>
         <Stack align="center">
