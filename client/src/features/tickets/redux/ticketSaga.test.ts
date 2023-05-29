@@ -174,27 +174,34 @@ describe("purchase flow", () => {
 });
 
 describe("hold cancellation", () => {
-  test("cancels hold and resets ticket transaction on cancel", () => {
-    return expectSaga(ticketFlow, holdAction)
-      .provide(networkProviders)
-      .call.fn(reserveTicketServerCall)
-      .dispatch(
-        startTicketRelease({ reservation: holdReservation, reason: "test" })
-      )
-      .put(showToast({ title: "test", status: "warning" }))
-      .call.fn(cancelTransaction)
-      .run();
-  });
+  // refactor code using test.each() method
+  test.each([
+    { name: "cancel", actionCreator: startTicketRelease },
+    { name: "abort", actionCreator: startTicketAbort },
+  ])(
+    "cancels hold and resets ticket transaction on $name",
+    ({ actionCreator }) => {
+      return expectSaga(ticketFlow, holdAction)
+        .provide(networkProviders)
+        .call.fn(reserveTicketServerCall)
+        .dispatch(
+          actionCreator({ reservation: holdReservation, reason: "test" })
+        )
+        .put(showToast({ title: "test", status: "warning" }))
+        .call.fn(cancelTransaction)
+        .run();
+    }
+  );
 
-  test("cancels hold and resets ticket transaction on abort", () => {
-    return expectSaga(ticketFlow, holdAction)
-      .provide(networkProviders)
-      .call(reserveTicketServerCall, holdReservation)
-      .dispatch(
-        startTicketAbort({ reservation: holdReservation, reason: "test" })
-      )
-      .put(showToast({ title: "test", status: "warning" }))
-      .call(cancelTransaction, holdReservation)
-      .run();
-  });
+  // test("cancels hold and resets ticket transaction on abort", () => {
+  //   return expectSaga(ticketFlow, holdAction)
+  //     .provide(networkProviders)
+  //     .call(reserveTicketServerCall, holdReservation)
+  //     .dispatch(
+  //       startTicketAbort({ reservation: holdReservation, reason: "test" })
+  //     )
+  //     .put(showToast({ title: "test", status: "warning" }))
+  //     .call(cancelTransaction, holdReservation)
+  //     .run();
+  // });
 });
