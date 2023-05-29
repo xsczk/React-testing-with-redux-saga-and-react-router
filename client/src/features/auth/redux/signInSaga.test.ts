@@ -23,8 +23,14 @@ const signInRequestPayload: SignInDetails = {
   action: "signIn",
 };
 
+const authServerResponse: LoggedInUser = {
+  email: "wowminhnghia@gmail.com",
+  token: "12345678901234567890123456789",
+  id: 123,
+};
+
 const networkProviders: Array<StaticProvider> = [
-  [matchers.call.fn(authServerCall), null],
+  [matchers.call.fn(authServerCall), authServerResponse],
 ];
 
 describe("signInFlow saga", () => {
@@ -37,8 +43,13 @@ describe("signInFlow saga", () => {
         .put(startSignIn())
         // TODO: create provider
         .call(authServerCall, signInRequestPayload)
-        .put.actionType(signIn.type) // partial assertion
-        .put.actionType(showToast.type)
+        .put(signIn(authServerResponse)) // partial assertion
+        .put(
+          showToast({
+            title: `Signed in as ${authServerResponse.email}`,
+            status: "info",
+          })
+        )
         .put(endSignIn())
         .silentRun() // using silentRun to avoid warning timeout in infinite loop
     );
