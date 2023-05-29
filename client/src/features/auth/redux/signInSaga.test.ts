@@ -35,6 +35,12 @@ const signUpRequestPayload: SignInDetails = {
   action: "signUp",
 };
 
+const sleep = (delay: number) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(resolve, delay);
+  });
+};
+
 const networkProviders: Array<StaticProvider> = [
   [matchers.call.fn(authServerCall), authServerResponse],
 ];
@@ -77,6 +83,28 @@ describe("signInFlow saga", () => {
       .put(endSignIn())
       .silentRun();
   });
-  test.todo("cancelled sign-in");
+  test("cancelled sign-in", () => {
+    return (
+      expectSaga(signInFlow)
+        // create dynamic provider to make sure
+        // that we have a delay to authServerCall
+        // so that cancelSignIn action can be dispatched
+        .provide({
+          call: async (effect, next) => {
+            if (effect.fn === authServerCall) {
+              await sleep(500);
+            }
+            next();
+          },
+        })
+        .dispatch(signInRequest(signInRequestPayload))
+        .fork(authenticateUser, signInRequestPayload)
+        .dispatch(cancelSignIn())
+        .put(showToast({ title: "Sign in canceled", status: "warning" }))
+        .put(signOut())
+        .put(endSignIn())
+        .silentRun()
+    );
+  });
   test.todo("sign-in error");
 });
