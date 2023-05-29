@@ -1,6 +1,6 @@
 import { SagaIterator } from "redux-saga";
 import { call, cancel, cancelled, fork, put, take } from "redux-saga/effects";
-
+import { createMockTask } from "@redux-saga/testing-utils";
 import { showToast } from "../../toast/redux/toastSlice";
 import { authServerCall } from "../api";
 import { LoggedInUser, SignInDetails } from "../types";
@@ -12,7 +12,7 @@ import {
   signOut,
   startSignIn,
 } from "./authSlice";
-import { expectSaga } from "redux-saga-test-plan";
+import { expectSaga, testSaga } from "redux-saga-test-plan";
 import { authenticateUser, signInFlow } from "./signInSaga";
 import * as matchers from "redux-saga-test-plan/matchers";
 import { StaticProvider, throwError } from "redux-saga-test-plan/providers";
@@ -125,5 +125,22 @@ describe("signInFlow saga", () => {
       )
       .put(endSignIn())
       .silentRun();
+  });
+});
+
+describe("unit tests for fork cancellation", () => {
+  test("saga cancel flow", () => {
+    const task = createMockTask();
+    const saga = testSaga(signInFlow);
+    saga.next().take(signInRequest.type);
+    saga
+      .next({
+        type: "test",
+        payload: signInRequestPayload,
+      })
+      .fork(authenticateUser, signInRequestPayload);
+    // task is the return value of authenticateUser
+    saga.next(task).take([cancelSignIn.type, endSignIn.type]);
+    saga.next(cancelSignIn()).cancel(task);
   });
 });
