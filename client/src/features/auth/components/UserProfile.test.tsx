@@ -1,7 +1,13 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen } from "../../../test-utils";
 import { UserProfile } from "./UserProfile";
 
+const testUser = {
+  email: "wowminhnghia@gmail.com",
+};
+
 test("greets the user", () => {
-  render(<UserProfile />);
-  expect(screen.getByText(/hi/i)).toBeInTheDocument();
+  render(<UserProfile />, {
+    preloadedState: { user: { userDetails: testUser } },
+  });
+  expect(screen.getByText(/hi, wowminhnghia@gmail.com/i)).toBeInTheDocument();
 });

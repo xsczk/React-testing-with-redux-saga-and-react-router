@@ -5,7 +5,7 @@ import {
 } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { configureStoreWithMiddlewares, RootState } from "../app/store";
-import { ReactElement, ReactNode } from "react";
+import { ReactElement } from "react";
 
 type CustomRenderOptions = {
   preloadedState?: RootState;
