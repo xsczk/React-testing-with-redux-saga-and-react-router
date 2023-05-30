@@ -1,25 +1,42 @@
 import {
-  render as rtlRender,
-  RenderResult,
   RenderOptions,
+  RenderResult,
+  render as rtlRender,
 } from "@testing-library/react";
-import { Provider } from "react-redux";
-import { configureStoreWithMiddlewares, RootState } from "../app/store";
+import { createMemoryHistory } from "history";
 import { ReactElement } from "react";
+import { Provider } from "react-redux";
+import { RootState, configureStoreWithMiddlewares } from "../app/store";
+import { Router } from "react-router";
 
 type CustomRenderOptions = {
   preloadedState?: RootState;
+  routeHistory?: Array<string>;
+  initialRouteIndex?: number;
   renderOptions?: Omit<RenderOptions, "wrapper">;
 };
 
 const render = (
   ui: ReactElement,
-  { preloadedState = {}, ...renderOptions }: CustomRenderOptions = {}
+  {
+    preloadedState = {},
+    routeHistory,
+    initialRouteIndex,
+    ...renderOptions
+  }: CustomRenderOptions = {}
 ): RenderResult => {
   const Wrapper: React.FC = ({ children }) => {
     const store = configureStoreWithMiddlewares(preloadedState);
-    // @ts-ignore
-    return <Provider store={store}>{children}</Provider>;
+    const history = createMemoryHistory({
+      initialEntries: routeHistory,
+      initialIndex: initialRouteIndex,
+    });
+    return (
+      <Provider store={store}>
+        {/* @ts-ignore */}
+        <Router history={history}>{children}</Router>
+      </Provider>
+    );
   };
   return rtlRender(ui, { wrapper: Wrapper, ...renderOptions });
 };

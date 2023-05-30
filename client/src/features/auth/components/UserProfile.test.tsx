@@ -11,3 +11,8 @@ test("greets the user", () => {
   });
   expect(screen.getByText(/hi, wowminhnghia@gmail.com/i)).toBeInTheDocument();
 });
+
+test("redirects if user is falsy", () => {
+  render(<UserProfile />);
+  expect(screen.queryByText(/hi/i)).not.toBeInTheDocument();
+});
